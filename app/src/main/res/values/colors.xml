@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#891515</color>
+    <color name="colorPrimaryDark">#5A122A</color>
+    <color name="colorAccent">#CE9B03</color>
+    <color name="dots_grey">#E6D9C7</color>
+    <color name="separation_line">#505050</color>
+</resources>

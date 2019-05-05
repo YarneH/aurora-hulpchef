@@ -89,16 +89,16 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             this.mIndex = i;
             Ingredient ingredient = ingredients.get(this.mIndex);
 
-            String nameWithoutQuantityAndUnit = ingredient.getName();
+            String name = ingredient.getName();
             // if it is possible to capitalize the first letter, capitalize.
-            if (nameWithoutQuantityAndUnit.length() > 1) {
-                nameWithoutQuantityAndUnit = nameWithoutQuantityAndUnit.substring(0, 1).toUpperCase(Locale.getDefault())
-                        + nameWithoutQuantityAndUnit.substring(1);
+            if (name.length() > 1) {
+                name = name.substring(0, 1).toUpperCase(Locale.getDefault())
+                        + name.substring(1);
             }
 
             double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
 
-            mIngredientName.setText(nameWithoutQuantityAndUnit);
+            mIngredientName.setText(name);
             mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
             mIngredientUnit.setText(ingredient.getUnit());
         }

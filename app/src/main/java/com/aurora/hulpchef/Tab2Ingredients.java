@@ -63,6 +63,10 @@ public class Tab2Ingredients extends Fragment {
             // Feed Adapter
             mIngredientAdapter = new IngredientAdapter(recipe.getIngredients(), recipe.getNumberOfPeople());
             mIngredientList.setAdapter(mIngredientAdapter);
+            if(mRecipe.getNumberOfPeople().getValue() != recipe.getNumberOfPeople()){
+                mIngredientAdapter.setChoseAmountOfServings(mRecipe.getNumberOfPeople().getValue());
+                mIngredientAdapter.notifyDataSetChanged();
+            }
         });
         mRecipe.getNumberOfPeople().observe(this, (Integer numberOfPeople) -> {
                     if (numberOfPeople == null) {
@@ -75,4 +79,6 @@ public class Tab2Ingredients extends Fragment {
         );
         return rootView;
     }
+
+
 }

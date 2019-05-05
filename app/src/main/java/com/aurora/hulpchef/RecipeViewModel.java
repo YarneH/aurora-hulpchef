@@ -106,6 +106,10 @@ public class RecipeViewModel extends AndroidViewModel {
     private boolean isDutch = false;
 
 
+    private Recipe mEnglishRecipe;
+
+    private Recipe mDutchRecipe;
+
     private TranslationServiceCaller mTranslationServiceCaller;
 
     /**
@@ -147,8 +151,8 @@ public class RecipeViewModel extends AndroidViewModel {
                 Context.MODE_PRIVATE);
         mListener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.VERTAAL)) {
-                boolean toTranslate = preferences.getBoolean(key, false);
-                translate(toTranslate);
+                boolean toDutch = preferences.getBoolean(key, false);
+                translate(toDutch);
             }
         };
         sharedPreferences.registerOnSharedPreferenceChangeListener(mListener);
@@ -174,16 +178,26 @@ public class RecipeViewModel extends AndroidViewModel {
                 List<String> sentences = recipe.createSentencesToTranslate();
                 String source;
                 String target;
-                if (toDutch) {
-                    source = "en";
-                    target = "nl";
-                } else {
-                    source = "nl";
-                    target = "en";
-                }
-                new TranslationTask(sentences, source, target,
-                        mTranslationServiceCaller).execute();
 
+                if (recipe.equals(mEnglishRecipe)) {
+                    // do the translation only if the dutch version has not been initialized
+                    if (mDutchRecipe == null) {
+                        source = "en";
+                        target = "nl";
+
+                        new TranslationTask(sentences, source, target,
+                                mTranslationServiceCaller).execute();
+
+                    } else {
+                        // post the dutch recipe
+                        mRecipe.postValue(mDutchRecipe);
+                    }
+                    isDutch = true;
+                } else {
+                    // post the english recipe
+                    mRecipe.postValue(mEnglishRecipe);
+                    isDutch = false;
+                }
             }
         }
     }
@@ -253,6 +267,7 @@ public class RecipeViewModel extends AndroidViewModel {
         }
         RecipeViewModel.this.mCurrentPeople.setValue(recipe.getNumberOfPeople());
         isDutch = false;
+        mEnglishRecipe = recipe;
         mInitialised.setValue(true);
     }
 
@@ -434,8 +449,8 @@ public class RecipeViewModel extends AndroidViewModel {
         protected void onPostExecute(List<String> translatedSentences) {
             Log.d(getClass().getSimpleName(), translatedSentences.toString());
 
-            Recipe translated = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
-            mRecipe.postValue(translated);
+            mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
+            mRecipe.postValue(mDutchRecipe);
 
         }
     }

@@ -75,69 +75,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Hardcoded recipe with extracted text and annotations
-     *
-     * @return the json of the annotated extracted test
-     */
-    private String getText() {
-
-        InputStream stream = getResources().openRawResource(R.raw.input);
-        StringBuilder bld = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        try {
-            String line = reader.readLine();
-            while (line != null) {
-                bld.append(line);
-
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e );
-        }
-        Log.d("read", bld.toString());
-        return bld.toString();
-    }
-
-    /**
-     * Sets up the observation of the recipeviewmodel
-     */
-    private void setUpRecipeDataObject() {
-        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
-                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                    pb.setProgress(mRecipeViewModel.getProgress());
-
-                    // TODO: set TextView to visualize progress
-                }
-        );
-        mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
-            if (isInitialised == null) {
-                return;
-            }
-            if (!isInitialised) {
-                showProgress();
-                return;
-            }
-            hideProgress();
-        });
-        mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
-            if (failed != null && failed) {
-                Toast.makeText(this, "Detection failed: " +
-                                mRecipeViewModel.getFailureMessage().getValue(),
-                        Toast.LENGTH_LONG).show();
-                ProgressBar pb = findViewById(R.id.pb_loading_screen);
-                pb.setProgress(0);
-            }
-        });
-        mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
-            if (set != null && set) {
-                Toast.makeText(this, "Amount of servings not found. Default (4) is set!",
-                        Toast.LENGTH_LONG).show();
-            }
-        });
-
-    }
-
-    /**
      * Overwritten method of Activity
      *
      * @param savedInstanceState The saved state.
@@ -177,101 +114,25 @@ public class MainActivity extends AppCompatActivity {
 
         boolean intentIsOkay = true;
 
-        if(intentThatStartedThisActivity.getAction() == null) {
-            Toast.makeText(this, "ERROR: The intent had no action.",
+        if (intentThatStartedThisActivity.getAction() == null) {
+            Toast.makeText(this, "ERROR: De intent had geen actie.",
                     Snackbar.LENGTH_LONG).show();
             intentIsOkay = false;
-        } else if(!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
-            Toast.makeText(this, "ERROR: The intent had incorrect action.",
+        } else if (!intentThatStartedThisActivity.getAction().equals(Constants.PLUGIN_ACTION)) {
+            Toast.makeText(this, "ERROR: De intent had een incorrecte actie.",
                     Snackbar.LENGTH_LONG).show();
             intentIsOkay = false;
-        } else if(!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
-            Toast.makeText(this, "ERROR: The intent had no specified input type.",
+        } else if (!intentThatStartedThisActivity.hasExtra(Constants.PLUGIN_INPUT_TYPE)) {
+            Toast.makeText(this, "ERROR: De intent had geen gespecifieerd input type",
                     Snackbar.LENGTH_LONG).show();
             intentIsOkay = false;
         }
 
-        if (intentIsOkay){
+        if (intentIsOkay) {
             handleIntentThatOpenedPlugin(intentThatStartedThisActivity);
-        }
-        else{
+        } else {
             // code for debugging with hardcoded recipe to delete in production
             mRecipeViewModel.initialiseWithPlainText(getText());
-        }
-    }
-
-
-    /**
-     * Initializes mRecipe according to the parameters in the Intent that opened the plugin
-     *
-     * @param intentThatStartedThisActivity Intent that opened the plugin
-     */
-    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity){
-        // Get the Uri to the transferred file
-        Uri fileUri = intentThatStartedThisActivity.getData();
-        if(fileUri == null) {
-            Toast.makeText(this, "ERROR: The intent had no url in the data field",
-                    Snackbar.LENGTH_LONG).show();
-        } else {
-            // Get the input type
-            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
-            // Switch on the different kinds of input types that could be in the temp file
-            switch (inputType) {
-                case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
-                    // Convert the read file to an ExtractedText object
-                    convertReadFileToExtractedText(fileUri);
-                    break;
-                case Constants.PLUGIN_INPUT_TYPE_OBJECT:
-                    // Convert the read file to an PluginObject
-                    convertReadFileToRecipe(fileUri);
-                    break;
-                default:
-                    Toast.makeText(this, "ERROR: The intent had an unsupported input type.",
-                            Snackbar.LENGTH_LONG).show();
-                    Log.d(TAG, "Loading plain default text (getText())");
-                    mRecipeViewModel.initialiseWithPlainText(getText());
-            }
-        }
-    }
-
-    /**
-     * Convert the read file to an ExtractedText object
-     *
-     * @param fileUri Uri to the file
-     */
-    private void convertReadFileToExtractedText(Uri fileUri){
-        try {
-            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile( fileUri,
-                    this);
-            if (extractedText != null) {
-                Log.d(TAG, "Loading extracted text.");
-                mRecipeViewModel.initialiseWithExtractedText(extractedText);
-            } else {
-                // Error in case ExtractedText was null.
-                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
-            }
-        } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
-                    "IOException while loading data from aurora", e);
-        }
-    }
-
-    /**
-     * Convert the read file to an PluginObject
-     *
-     * @param fileUri Uri to the file
-     */
-    private void convertReadFileToRecipe(Uri fileUri){
-        try {
-            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
-                    Recipe.class);
-
-            Log.d(TAG, "Loading cashed Object.");
-            mRecipeViewModel.initialiseWithRecipe(receivedObject);
-
-        } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
-                    "IOException while loading data from aurora", e);
         }
     }
 
@@ -294,6 +155,102 @@ public class MainActivity extends AppCompatActivity {
         cl.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Sets up the observation of the recipeviewmodel
+     */
+    private void setUpRecipeDataObject() {
+        mRecipeViewModel.getProgressStep().observe(this, (Integer step) -> {
+                    ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                    pb.setProgress(mRecipeViewModel.getProgress());
+
+                    // TODO: set TextView to visualize progress
+                }
+        );
+        mRecipeViewModel.getInitialised().observe(this, (Boolean isInitialised) -> {
+            if (isInitialised == null) {
+                return;
+            }
+            if (!isInitialised) {
+                showProgress();
+                return;
+            }
+            hideProgress();
+        });
+        mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
+            if (failed != null && failed) {
+                Toast.makeText(this, "Detectie faalde: " +
+                                mRecipeViewModel.getFailureMessage().getValue(),
+                        Toast.LENGTH_LONG).show();
+                ProgressBar pb = findViewById(R.id.pb_loading_screen);
+                pb.setProgress(0);
+            }
+        });
+        mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
+            if (set != null && set) {
+                Toast.makeText(this, "Het aantal porties is niet gedecteerd. " +
+                                "Het is op de standaardwaarde (4) gezet!",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+    /**
+     * Initializes mRecipe according to the parameters in the Intent that opened the plugin
+     *
+     * @param intentThatStartedThisActivity Intent that opened the plugin
+     */
+    private void handleIntentThatOpenedPlugin(Intent intentThatStartedThisActivity) {
+        // Get the Uri to the transferred file
+        Uri fileUri = intentThatStartedThisActivity.getData();
+        if (fileUri == null) {
+            Toast.makeText(this, "ERROR: De intent had geen url in het data veld. Contacteer Aurora.",
+                    Snackbar.LENGTH_LONG).show();
+        } else {
+            // Get the input type
+            String inputType = intentThatStartedThisActivity.getStringExtra(Constants.PLUGIN_INPUT_TYPE);
+            // Switch on the different kinds of input types that could be in the temp file
+            switch (inputType) {
+                case Constants.PLUGIN_INPUT_TYPE_EXTRACTED_TEXT:
+                    // Convert the read file to an ExtractedText object
+                    convertReadFileToExtractedText(fileUri);
+                    break;
+                case Constants.PLUGIN_INPUT_TYPE_OBJECT:
+                    // Convert the read file to an PluginObject
+                    convertReadFileToRecipe(fileUri);
+                    break;
+                default:
+                    Toast.makeText(this, "ERROR: De intent had geen ondersteund input type",
+                            Snackbar.LENGTH_LONG).show();
+                    Log.d(TAG, "Loading plain default text (getText())");
+                    mRecipeViewModel.initialiseWithPlainText(getText());
+            }
+        }
+    }
+
+    /**
+     * Hardcoded recipe with extracted text and annotations
+     *
+     * @return the json of the annotated extracted test
+     */
+    private String getText() {
+
+        InputStream stream = getResources().openRawResource(R.raw.input);
+        StringBuilder bld = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        try {
+            String line = reader.readLine();
+            while (line != null) {
+                bld.append(line);
+
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            Log.e("MAIN", "opening default file failed", e);
+        }
+        Log.d("read", bld.toString());
+        return bld.toString();
+    }
 
     /**
      * Hide the progress-screen.
@@ -314,6 +271,47 @@ public class MainActivity extends AppCompatActivity {
         appBarLayout.setVisibility(View.VISIBLE);
         mViewPager.setVisibility(View.VISIBLE);
         tabLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Convert the read file to an ExtractedText object
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToExtractedText(Uri fileUri) {
+        try {
+            ExtractedText extractedText = ExtractedText.getExtractedTextFromFile(fileUri,
+                    this);
+            if (extractedText != null) {
+                Log.d(TAG, "Loading extracted text.");
+                mRecipeViewModel.initialiseWithExtractedText(extractedText);
+            } else {
+                // Error in case ExtractedText was null.
+                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+            }
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
+    }
+
+    /**
+     * Convert the read file to an PluginObject
+     *
+     * @param fileUri Uri to the file
+     */
+    private void convertReadFileToRecipe(Uri fileUri) {
+        try {
+            Recipe receivedObject = Recipe.getPluginObjectFromFile(fileUri, this,
+                    Recipe.class);
+
+            Log.d(TAG, "Loading cashed Object.");
+            mRecipeViewModel.initialiseWithRecipe(receivedObject);
+
+        } catch (IOException e) {
+            Log.e(MainActivity.class.getSimpleName(),
+                    "IOException while loading data from aurora", e);
+        }
     }
 
     /**

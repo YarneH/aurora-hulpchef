@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
         // Get the Uri to the transferred file
         Uri fileUri = intentThatStartedThisActivity.getData();
         if (fileUri == null) {
-            Toast.makeText(this, "ERROR: De intent had geen url in het data veld. Contacteer Aurora.",
+            Toast.makeText(this, "ERROR: De intent had geen uri in het data veld. Contacteer Aurora.",
                     Snackbar.LENGTH_LONG).show();
         } else {
             // Get the input type

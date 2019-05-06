@@ -59,14 +59,14 @@ pipeline {
                         withSonarQubeEnv("Aurora SonarQube") {
                         sh """
                         ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
-                        -Dapp.sonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
+                        -Dsonar.java.binaries=build/intermediates/javac/release/compileReleaseJavaWithJavac
                         """
                         }
                     } else {
                         withSonarQubeEnv("Aurora SonarQube") {
                         sh """
                         ${scannerHome}/bin/sonar-scanner -X -Dproject.settings=sonar-project.properties -Dsonar.branch=${env.BRANCH_NAME} \
-                        -Dapp.sonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
+                        -Dsonar.java.binaries=build/intermediates/javac/debug/compileDebugJavaWithJavac
                         """
                         }
                     }

@@ -123,10 +123,8 @@ pipeline {
                     // Compile and run the unit tests for the app and its dependencies
                     if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'dev') {
                         sh "./gradlew testReleaseUnitTest --tests '*IntegTest'"
-                        sh "./gradlew paperviewerprocessor:testReleaseUnitTest --tests '*IntegTest'"
                     } else {
                         sh "./gradlew testDebugUnitTest --tests '*IntegTest'"
-                        sh "./gradlew paperviewerprocessor:testDebugUnitTest --tests '*IntegTest'"
                     }
 
 

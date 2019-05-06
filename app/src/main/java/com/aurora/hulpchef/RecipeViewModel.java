@@ -269,9 +269,12 @@ public class RecipeViewModel extends AndroidViewModel {
         isDutch = false;
         mEnglishRecipe = recipe;
         mInitialised.setValue(true);
+        if(isPreferenceSetToDutch()){
+            translate(true);
+        }
     }
 
-    private boolean isImperial() {
+    private boolean isPreferenceSetToDutch() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
                 Context.MODE_PRIVATE);
@@ -448,7 +451,6 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
             Log.d(getClass().getSimpleName(), translatedSentences.toString());
-
             mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
             mRecipe.postValue(mDutchRecipe);
 

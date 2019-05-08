@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.aurora.hulpchef.utilities.StringUtilities;
 import com.aurora.souschefprocessor.recipe.ListIngredient;
 
 import java.util.List;
@@ -155,7 +156,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             double amount = ingredient.getQuantity() / mOriginalAmountOfServings * mChosenAmountOfServings;
 
             // Set Textviews
-            mIngredientAmount.setText(toDisplayQuantity(amount));
+            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(amount));
             mIngredientName.setText(nameWithoutQuantityAndUnit);
             mIngredientUnit.setText(ingredient.getUnit());
 
@@ -175,41 +176,5 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
                     Snackbar.LENGTH_LONG).show();
         }
 
-        /**
-         * Generates fraction from double
-         *
-         * @param quantity double to display
-         * @return String containing the resulting quantity.
-         */
-        private String toDisplayQuantity(double quantity) {
-            if (isAlmostInteger(quantity)) {
-                return "" + ((int) Math.round(quantity));
-            }
-            for (int i = MIN_DENOMINATOR_OF_FRACTIONS; i <= MAX_DENOMINATOR_OF_FRACTIONS; i++) {
-                if (isAlmostInteger(quantity * i)) {
-                    return "" + ((int) Math.round(quantity * i) + "/" + i);
-                }
-            }
-
-            // If all fails, just return double with 2 decimals (if needed)
-            String output;
-            if (quantity == (long) quantity) {
-                output = String.format(Locale.ENGLISH, "%d", (long) quantity);
-            } else {
-                output = String.format(Locale.ENGLISH, "%.2f", quantity);
-            }
-
-            return output;
-        }
-
-        /**
-         * returns true if the distance from the nearest int is smaller than {@value ROUND_EPSILON}
-         *
-         * @param quantity double to check
-         * @return true when close enough.
-         */
-        private boolean isAlmostInteger(double quantity) {
-            return Math.abs(Math.round(quantity) - quantity) < ROUND_EPSILON * quantity;
-        }
     }
 }

@@ -19,18 +19,20 @@ import java.util.Locale;
  */
 public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAdapter.CardIngredientViewHolder> {
     private final List<Ingredient> ingredients;
-    private int mCurrentAmount = 0;
-    private int mOriginalAmount = 0;
+    private int mCurrentAmount;
+    private int mOriginalAmount;
+    private int mStepDescriptionLength = 0;
 
     /**
      * Constructs the adapter with a list
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount) {
+    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount, int stepDescriptionLength) {
         this.ingredients = ingredients;
         this.mCurrentAmount = currentAmount;
         this.mOriginalAmount = originalAmount;
+        mStepDescriptionLength = stepDescriptionLength;
     }
 
     @NonNull
@@ -99,8 +101,22 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             double newQuantity = ingredient.getQuantity() * mCurrentAmount / mOriginalAmount;
 
             mIngredientName.setText(name);
-            mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
-            mIngredientUnit.setText(ingredient.getUnit());
+            // Only display quantity in list if the quantity is in the current step description
+            if (ingredient.getQuantityPosition().getBeginIndex() != 0
+                    || ingredient.getQuantityPosition().getEndIndex() != mStepDescriptionLength) {
+                mIngredientAmount.setText(StringUtilities.toDisplayQuantity(newQuantity));
+                mIngredientAmount.setVisibility(View.VISIBLE);
+            } else {
+                mIngredientAmount.setVisibility(View.GONE);
+            }
+
+            // Set TextView of unit to GONE when it has no unit
+            if ("".equals(ingredient.getUnit())){
+                mIngredientUnit.setVisibility(View.GONE);
+            } else {
+                mIngredientUnit.setText(ingredient.getUnit());
+                mIngredientUnit.setVisibility(View.VISIBLE);
+            }
         }
     }
 }

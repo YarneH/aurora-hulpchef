@@ -29,8 +29,7 @@ public class UITimer {
      * Time constant: seconds in a quarter hour.
      */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
-    private static final int AMOUNT_SEC_IN_MIN = 60;
-    private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
+
     /**
      * Time constant: seconds in a minute.
      */

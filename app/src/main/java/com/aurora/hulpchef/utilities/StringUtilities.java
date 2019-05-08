@@ -30,13 +30,15 @@ public final class StringUtilities {
         }
         double remainder = quantity - base;
 
+        StringBuilder baseStringBuilder = new StringBuilder(baseString);
+
         for (int i = MIN_DENOMINATOR_OF_FRACTIONS; i <= MAX_DENOMINATOR_OF_FRACTIONS; i++) {
             if (isAlmostInteger(remainder * i)) {
                 String remainderString = "" + ((int) Math.round(remainder * i) + "/" + i);
-                if (!"".equals(baseString)) {
-                    baseString += ", ";
+                if (baseStringBuilder.length() != 0) {
+                    baseStringBuilder.append(", ");
                 }
-                return baseString + remainderString;
+                return baseStringBuilder.append(remainderString).toString();
             }
         }
 

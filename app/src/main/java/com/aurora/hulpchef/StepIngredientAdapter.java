@@ -28,7 +28,8 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
      *
      * @param ingredients list for construction
      */
-    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount, int stepDescriptionLength) {
+    public StepIngredientAdapter(List<Ingredient> ingredients, int originalAmount, int currentAmount,
+                                 int stepDescriptionLength) {
         this.ingredients = ingredients;
         this.mCurrentAmount = currentAmount;
         this.mOriginalAmount = originalAmount;
@@ -111,7 +112,7 @@ public class StepIngredientAdapter extends RecyclerView.Adapter<StepIngredientAd
             }
 
             // Set TextView of unit to GONE when it has no unit
-            if ("".equals(ingredient.getUnit())){
+            if ("".equals(ingredient.getUnit())) {
                 mIngredientUnit.setVisibility(View.GONE);
             } else {
                 mIngredientUnit.setText(ingredient.getUnit());

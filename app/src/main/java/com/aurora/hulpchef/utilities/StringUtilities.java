@@ -36,7 +36,7 @@ public final class StringUtilities {
             if (isAlmostInteger(remainder * i)) {
                 String remainderString = "" + ((int) Math.round(remainder * i) + "/" + i);
                 if (baseStringBuilder.length() != 0) {
-                    baseStringBuilder.append(", ");
+                    baseStringBuilder.append(" ");
                 }
                 return baseStringBuilder.append(remainderString).toString();
             }

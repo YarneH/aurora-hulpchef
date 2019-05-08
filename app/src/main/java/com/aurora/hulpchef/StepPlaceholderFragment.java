@@ -167,7 +167,8 @@ public class StepPlaceholderFragment extends Fragment {
 
         // Feed Adapter
         StepIngredientAdapter ingredientAdapter =
-                new StepIngredientAdapter(mRecipeStep.getIngredients(), recipe.getNumberOfPeople(), mCurrentAmount);
+                new StepIngredientAdapter(mRecipeStep.getIngredients(), recipe.getNumberOfPeople(), mCurrentAmount,
+                        mRecipeStep.getDescription().length());
         mIngredientList.setAdapter(ingredientAdapter);
 
         // Disable the line if there are no ingredients listed
@@ -266,19 +267,20 @@ public class StepPlaceholderFragment extends Fragment {
 
                 // Check if the quantity is represent in the current block of the description
                 if (ingredient.getQuantityPosition().getBeginIndex() < beginOfTextBlock) {
-                    // The current ingredient (and all the following) is located in a text-block which
+                    // The current ingredient (and all the following) are located in a text-block which
                     // comes before the current text block
                     break;
-                } else if (ingredient.getQuantityPosition().getEndIndex() > endOfTextBlock) {
-                    // The current ingredient is located in a text-block which comes after the current
-                    // text block. Following ingredients can still be located in this current text block
-                    continue;
                 }
-                // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
-                description = description.
-                        substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
-                        + INGREDIENT_CODE
-                        + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+                if (ingredient.getQuantityPosition().getEndIndex() <= endOfTextBlock) {
+                    // The quantity is in the step and needs to be replaced by INGREDIENT_CODE
+                    description = description.
+                            substring(0, ingredient.getQuantityPosition().getBeginIndex() - beginOfTextBlock)
+                            + INGREDIENT_CODE
+                            + description.substring(ingredient.getQuantityPosition().getEndIndex() - beginOfTextBlock);
+                }
+                // The current ingredient is located in a text-block which comes after the current
+                // text block. Following ingredients can still be located in this current text block so continue the
+                // looop
             }
         }
 

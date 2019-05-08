@@ -17,4 +17,5 @@
 
     <!-- Tab dimensions -->
     <dimen name="tab1_text_margin">15dp</dimen>
+    <dimen name="tab3_step_ingredient_margin">8dp</dimen>
 </resources>

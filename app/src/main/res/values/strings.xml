@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Hulpchef</string>
+    <string name="description">Open Engelstalige recepten met Hulpchef en laat ze automatisch
+        vertalen naar het Nederlands.</string>
     <string name="title_activity_steps">StappenActiviteit</string>
     <string name="action_settings">Instellingen</string>
     <string name="section_format">Stap %1$d</string>

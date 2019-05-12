@@ -6,9 +6,21 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:description="@string/description"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- Required internal services -->
+        <meta-data android:name="TEXT_EXTRACTION"
+            android:value="true" />
+        <meta-data android:name="NLP_TOKENIZE"
+            android:value="true" />
+        <meta-data android:name="NLP_SSPLIT"
+            android:value="true" />
+        <meta-data android:name="NLP_POS"
+            android:value="true" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

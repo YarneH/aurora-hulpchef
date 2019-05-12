@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Hulpchef</string>
+    <string name="description">Open Engelstalige recepten met Hulpchef en laat ze automatisch
+        vertalen naar het Nederlands.</string>
+    <string name="title_activity_steps">StappenActiviteit</string>
+    <string name="action_settings">Instellingen</string>
+    <string name="section_format">Stap %1$d</string>
+    <string name="overview">Overzicht</string>
+    <string name="ingredients">Ingrediënten</string>
+    <string name="steps">Stappen</string>
+
+    <!-- Strings for Tab2Ingredients -->
+    <string name="amount_people">Aantal porties:</string>
+    <string name="btn_plus">+</string>
+    <string name="btn_minus">-</string>
+    <!-- String for timer -->
+    <string name="timer_icon_description">Dit is het icoon van een timer</string>
+    <string name="indicator_dot_description">Bevat indicator bolletjes om te navigeren tussen de stappen</string>
+    <string name="translate_to_dutch">Vertaal naar Nederlands</string>
+</resources>

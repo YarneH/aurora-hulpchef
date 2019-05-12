@@ -23,7 +23,7 @@ public class Tab3Steps extends Fragment {
     /**
      * Array with the text in every step.
      */
-    private String[] mDescriptionSteps = null;
+    private int mAmountSteps = 0;
     /**
      * Adapter for filling the different step cards.
      */
@@ -59,27 +59,11 @@ public class Tab3Steps extends Fragment {
                 return;
             }
             mStepsPagerAdapter.notifyDataSetChanged();
-            mDescriptionSteps = extractDescriptionSteps(recipe);
+            mAmountSteps = recipe.getRecipeSteps().size();
             mViewPager.setAdapter(mStepsPagerAdapter);
         });
 
         return rootView;
-    }
-
-    /**
-     * Extracts the descriptions of the different steps.
-     *
-     * @param recipe where to extract the steps from.
-     * @return Array with extracted descriptions. Holds as much elements as there are steps.
-     */
-    public static String[] extractDescriptionSteps(Recipe recipe) {
-        int stepsCount = recipe.getRecipeSteps().size();
-        String[] steps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
-        }
-        return steps;
     }
 
     /**
@@ -92,20 +76,26 @@ public class Tab3Steps extends Fragment {
             super(fm);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Fragment getItem(int position) {
             return StepPlaceholderFragment.newInstance(position);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getCount() {
             // Return total pages.
-            if (mDescriptionSteps == null) {
-                return 0;
-            }
-            return mDescriptionSteps.length;
+            return mAmountSteps;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int getItemPosition(@NonNull Object object) {
             return POSITION_NONE;

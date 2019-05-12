@@ -105,9 +105,9 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private boolean isDutch = false;
 
-/**
- * The original processed recipe if the processing has succeeded
- */
+    /**
+     * The original processed recipe if the processing has succeeded
+     */
     private Recipe mEnglishRecipe;
 
     /**
@@ -115,6 +115,9 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private Recipe mDutchRecipe;
 
+    /**
+     * A private helper that is responsible with calling the translation service
+     */
     private TranslationServiceCaller mTranslationServiceCaller;
 
     /**
@@ -274,7 +277,7 @@ public class RecipeViewModel extends AndroidViewModel {
         isDutch = false;
         mEnglishRecipe = recipe;
         mInitialised.setValue(true);
-        if(isPreferenceSetToDutch()){
+        if (isPreferenceSetToDutch()) {
             translate(true);
         }
     }
@@ -428,6 +431,10 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * A private task that calls the {@link TranslationServiceCaller#translateOperation(List, String, String)} method
+     * and will post the result
+     */
     private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
@@ -444,7 +451,9 @@ public class RecipeViewModel extends AndroidViewModel {
 
         }
 
-
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected List<String> doInBackground(Void... params) {
             List<String> result = mTranslationServiceCaller.translateOperation(mSentences,
@@ -453,6 +462,9 @@ public class RecipeViewModel extends AndroidViewModel {
             return result;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
             Log.d(getClass().getSimpleName(), translatedSentences.toString());

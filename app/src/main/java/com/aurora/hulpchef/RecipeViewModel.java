@@ -105,9 +105,14 @@ public class RecipeViewModel extends AndroidViewModel {
      */
     private boolean isDutch = false;
 
-
+/**
+ * The original processed recipe if the processing has succeeded
+ */
     private Recipe mEnglishRecipe;
 
+    /**
+     * The translated recipe if the translation has succeeded
+     */
     private Recipe mDutchRecipe;
 
     private TranslationServiceCaller mTranslationServiceCaller;

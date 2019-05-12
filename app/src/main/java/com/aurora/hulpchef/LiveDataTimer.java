@@ -48,6 +48,10 @@ public class LiveDataTimer {
      */
     private boolean mRunning = false;
     /**
+     * A boolean representing whether the timer is ringing or not
+     */
+    private boolean mRinging = false;
+    /**
      * The original time received from the user or from the recipe.
      */
     private int mTimeSetByUser;
@@ -80,6 +84,7 @@ public class LiveDataTimer {
         mAlarming.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mRunning = false;
+        mRinging = false;
         mTimerState.setValue(TIMER_INITIALISED);
     }
 
@@ -98,9 +103,17 @@ public class LiveDataTimer {
         mRunning = false;
     }
 
+    /**
+     * Resets the timer to it's original time
+     */
     public void resetTimer() {
+        mFinished.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
+        mTimerState.setValue(TIMER_INITIALISED);
         mRunning = false;
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
     }
 
     /**
@@ -191,7 +204,7 @@ public class LiveDataTimer {
      * @return true if timer is changeable.
      */
     public boolean canChangeTimer() {
-        return mRunning && (mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound());
+        return mRecipeTimer.getLowerBound() != mRecipeTimer.getUpperBound();
     }
 
     /**
@@ -232,5 +245,22 @@ public class LiveDataTimer {
      */
     public LiveData<Integer> getTimerState() {
         return mTimerState;
+    }
+
+    /**
+     * Returns true if the Ringtone is ringing for this timer
+     *
+     * @return boolean representing whether the Ringtone is ringing or not
+     */
+    public boolean isRinging(){
+        return mRinging;
+    }
+
+    /**
+     * Set the ringing state of the timer
+     * @param ringing true if the Ringtone is ringing, false if not
+     */
+    public void setRinging(boolean ringing){
+        mRinging = ringing;
     }
 }

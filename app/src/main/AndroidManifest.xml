@@ -22,10 +22,12 @@
             android:value="true" />
 
         <activity android:name=".MainActivity">
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
             <intent-filter>
                 <action android:name="com.aurora.auroralib.AURORA_PLUGIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>

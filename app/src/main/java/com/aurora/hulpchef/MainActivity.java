@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.hulpchef.utilities.TimerRingtone;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -86,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // TODO: Change back to the correct view
         setContentView(R.layout.activity_main);
+
+        // Initiate the TimerRingtone with the application context
+        TimerRingtone.getInstance().initialize(getApplicationContext());
 
         // Obtain the FirebaseAnalytics instance.
         // Most of firebase analytics is done automatically.

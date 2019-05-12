@@ -3,15 +3,15 @@ package com.aurora.hulpchef;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LifecycleOwner;
 import android.content.DialogInterface;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.aurora.hulpchef.utilities.TimerRingtone;
 
 /**
  * A UI class responsible for filling in the UI with timer data.
@@ -29,7 +29,19 @@ public class UITimer {
      * Time constant: seconds in a quarter hour.
      */
     private static final int AMOUNT_SEC_IN_QUARTER = 900;
-
+    /**
+     * Time constant: seconds in a minute.
+     */
+    private static final int AMOUNT_SEC_IN_MIN = 60;
+    /**
+     * The time it takes before the color of a timer changes when it is alarming.
+     */
+    private static final int CHANGE_COLOR_MILLISEC_DELAY = 250;
+    /**
+     * The amount of milliseconds in a second. Needed to convert
+     * RecipeTimers (which are in seconds) to actual timers.
+     */
+    private static final int MILLIS = 1000;
     /**
      * Time constant: seconds in a minute.
      */
@@ -50,7 +62,6 @@ public class UITimer {
      * Maximum percentage. Preventing magic numbers.
      */
     private static final int PERCENT = 100;
-
     /**
      * Data container for timers.
      */
@@ -60,9 +71,13 @@ public class UITimer {
      */
     private View mTimerCard;
     /**
-     * Ringtone for the alarm of the timer
+     * A handler for the flickering of the card, when the timer is alarming
      */
-    private Ringtone mRingtone;
+    private Handler mHandler = null;
+    /**
+     * A boolean representing whether the color of the card is dark
+     */
+    private boolean mColorDark = true;
 
     /**
      * Sets up text and timer views.
@@ -84,48 +99,12 @@ public class UITimer {
             }
         });
 
-        setOnClickListeners(mTimerCard);
-        this.mLiveDataTimer.getIsFinished().observe(owner, aBoolean -> onTimerFinished());
-
-        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconAndBackground);
-
-        // Preparing the ringtone for the alarm
-        Uri alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        if (alert == null) {
-            // alert is null, using backup
-            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-
-            // I can't see this ever being null (as always have a default notification)
-            // but just in case
-            if (alert == null) {
-                // alert backup is null, using 2nd backup
-                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            }
-        }
-        mRingtone = RingtoneManager.getRingtone(mTimerCard.getContext(), alert);
+        setOnClickListeners();
 
         this.mLiveDataTimer.isAlarming().observe(owner, this::setAlarm);
 
-    }
+        this.mLiveDataTimer.getTimerState().observe(owner, this::setIconsAndBackground);
 
-    private void setIconAndBackground(int timerState) {
-        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
-        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
-
-        if (timerState == LiveDataTimer.TIMER_RUNNING) {
-            imageView.setImageResource(R.drawable.ic_pause_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
-        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
-            imageView.setImageResource(R.drawable.ic_play_white);
-            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
-        }
-    }
-
-    /**
-     * TODO: What happens on timer completion?
-     */
-    private static void onTimerFinished() {
-        // TODO: This function is called when the timer finishes
     }
 
     /**
@@ -133,14 +112,98 @@ public class UITimer {
      * <p>
      * Uses toggleTimer.
      */
-    private void setOnClickListeners(View clickableView) {
-        clickableView.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
-        clickableView.setOnLongClickListener((View v) -> {
-            if (mLiveDataTimer.canChangeTimer()) {
-                setTimerPopup();
-            }
+    private void setOnClickListeners() {
+
+        mTimerCard.setOnClickListener((View v) -> mLiveDataTimer.toggleTimer());
+        mTimerCard.setOnLongClickListener((View v) -> {
+            mLiveDataTimer.resetTimer();
             return true;
         });
+        if (mLiveDataTimer.canChangeTimer()) {
+            mTimerCard.findViewById(R.id.iv_edit_icon).setOnClickListener((View v) -> setTimerPopup());
+        }
+    }
+
+    /**
+     * Set the icons and background according to the state of the timer
+     * @param timerState The current state of the timer
+     */
+    private void setIconsAndBackground(int timerState) {
+        ImageView imageView = mTimerCard.findViewById(R.id.iv_timer_icon);
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
+
+        // Check whether the edit icon has to be displayed
+        if (mLiveDataTimer.canChangeTimer()) {
+            if (timerState == LiveDataTimer.TIMER_INITIALISED) {
+                mTimerCard.findViewById(R.id.iv_edit_icon).setVisibility(View.VISIBLE);
+            } else {
+                mTimerCard.findViewById(R.id.iv_edit_icon).setVisibility(View.GONE);
+            }
+        }
+
+        // Change color and icon according to the timer state
+        if (timerState == LiveDataTimer.TIMER_RUNNING) {
+            imageView.setImageResource(R.drawable.ic_pause_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimary));
+        } else if (timerState == LiveDataTimer.TIMER_PAUSED) {
+            imageView.setImageResource(R.drawable.ic_play_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+        } else if (timerState == LiveDataTimer.TIMER_INITIALISED) {
+            imageView.setImageResource(R.drawable.ic_timer_white);
+            contentView.setBackgroundColor(mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+        }
+    }
+
+    /**
+     * Sets alarm of the timer
+     *
+     * @param alarming a boolean representing the timer going off
+     */
+    private void setAlarm(boolean alarming) {
+        setFlickering(alarming);
+
+        if (alarming && !mLiveDataTimer.isRinging()) {
+            TimerRingtone.getInstance().addRingingTimer();
+            mLiveDataTimer.setRinging(true);
+        } else if (!alarming && mLiveDataTimer.isRinging()) {
+            TimerRingtone.getInstance().removeRingingTimer();
+            mLiveDataTimer.setRinging(false);
+        }
+    }
+
+    /**
+     * Set the flickering of a timer on or off
+     * @param flicker a boolean, true if flickering must be turned on, false otherwise
+     */
+    private void setFlickering(boolean flicker) {
+        View contentView = mTimerCard.findViewById(R.id.cl_timer_content);
+
+        if (flicker) {
+            if (mHandler == null) {
+                mHandler = new Handler();
+            }
+
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mColorDark) {
+                        contentView.setBackgroundColor(
+                                mTimerCard.getResources().getColor(R.color.colorPrimary));
+                        mColorDark = false;
+                    } else {
+                        contentView.setBackgroundColor(
+                                mTimerCard.getResources().getColor(R.color.colorPrimaryDark));
+                        mColorDark = true;
+                    }
+                    mHandler.postDelayed(this, CHANGE_COLOR_MILLISEC_DELAY);
+                }
+            }, CHANGE_COLOR_MILLISEC_DELAY);
+
+        } else {
+            if (mHandler != null) {
+                mHandler.removeCallbacksAndMessages(null);
+            }
+        }
     }
 
     /**
@@ -167,18 +230,21 @@ public class UITimer {
         @SuppressLint("InflateParams")
         View promptView = li.inflate(R.layout.prompt_timer_card, null);
         SeekBar seekBar = promptView.findViewById(R.id.sk_timer);
+        if (mLiveDataTimer.getMillisLeft().getValue() != null) {
+            int currentProgress = convertSecondsToProgress((int) (mLiveDataTimer.getMillisLeft().getValue() / MILLIS));
+            seekBar.setProgress(currentProgress, true);
+        }
 
         // Get the TextView of the popup and set to the initial value
         final TextView seekBarValue = promptView.findViewById(R.id.tv_timer);
-        seekBarValue.setText(LiveDataTimer.convertTimeToString(mLiveDataTimer.getLowerBound()));
+        seekBarValue.setText(LiveDataTimer.convertTimeToString(mLiveDataTimer.getMillisLeft().getValue()));
 
         // Set the listener of the SeekBar
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int newValue = convertProgressToSeconds(progress, step);
-
-                seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue));
+                seekBarValue.setText(LiveDataTimer.convertTimeToString(newValue * MILLIS));
             }
 
             @Override
@@ -203,16 +269,6 @@ public class UITimer {
         alertDialogBuilder.create().show();
     }
 
-    private void setAlarm(boolean status) {
-        if (status) {
-            mRingtone.play();
-        } else {
-            if (mRingtone.isPlaying()) {
-                mRingtone.stop();
-            }
-        }
-    }
-
     /**
      * Calculate the amount of seconds set by user using the progress of the SeekBar
      *
@@ -222,8 +278,20 @@ public class UITimer {
     private int convertProgressToSeconds(int progress, int step) {
         int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
         double progressValue = ((double) (difference)) * progress / PERCENT;
-        int incrementValue = (int) Math.floor(progressValue / step) * step;
+        int incrementValue = (int) Math.floor(progressValue / (double) step) * step;
 
         return mLiveDataTimer.getLowerBound() + incrementValue;
+    }
+
+    /**
+     * Calculate the progress of the SeekBar using an amount of seconds
+     *
+     * @param seconds The amount of seconds currently chosen by the user
+     * @return The amount of progress of the SeekBar
+     */
+    private int convertSecondsToProgress(int seconds) {
+        int difference = mLiveDataTimer.getUpperBound() - mLiveDataTimer.getLowerBound();
+        int relativeDifference = seconds - mLiveDataTimer.getLowerBound();
+        return (int) ((relativeDifference / (double) difference) * PERCENT);
     }
 }

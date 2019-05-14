@@ -1,6 +1,7 @@
 package com.aurora.hulpchef;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -435,7 +436,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * A private task that calls the {@link TranslationServiceCaller#translateOperation(List, String, String)} method
      * and will post the result
      */
-    private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+    private  class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
         private String mDestinationLanguage;
@@ -467,9 +468,27 @@ public class RecipeViewModel extends AndroidViewModel {
          */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
-            Log.d(getClass().getSimpleName(), translatedSentences.toString());
-            mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
-            mRecipe.postValue(mDutchRecipe);
+            if (translatedSentences.size() > 0) {
+                Log.d(getClass().getSimpleName(), translatedSentences.toString());
+                mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
+                mRecipe.postValue(mDutchRecipe);
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+
+
+                builder.setMessage("Het lukte niet dit recept te vertalen. Bent u met het internet geconnecteerd?")
+                        .setTitle("Er ging iets mis...");
+
+                // set the dutch flag back to false
+                isDutch = false;
+
+                AlertDialog dialog = builder.create();
+                dialog.setCancelable(true);
+                dialog.show();
+
+
+
+            }
 
         }
     }

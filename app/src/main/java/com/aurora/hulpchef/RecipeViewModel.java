@@ -468,7 +468,7 @@ public class RecipeViewModel extends AndroidViewModel {
          */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
-            if (translatedSentences.size() > 0) {
+            if (!translatedSentences.isEmpty()) {
                 Log.d(getClass().getSimpleName(), translatedSentences.toString());
                 mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
                 mRecipe.postValue(mDutchRecipe);

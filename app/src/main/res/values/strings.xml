@@ -16,5 +16,9 @@
     <!-- String for timer -->
     <string name="timer_icon_description">Dit is het icoon van een timer</string>
     <string name="indicator_dot_description">Bevat indicator bolletjes om te navigeren tussen de stappen</string>
+   <!-- Preferences string -->
     <string name="translate_to_dutch">Vertaal naar Nederlands</string>
+    <!-- Translation error -->
+    <string name="something_went_wrong">Er ging iets mis...</string>
+    <string name="translation_error">Het lukte niet dit recept te vertalen. Bent u met het internet geconnecteerd?</string>
 </resources>

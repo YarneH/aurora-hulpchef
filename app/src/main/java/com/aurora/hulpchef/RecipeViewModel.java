@@ -426,7 +426,7 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (!mProcessingFailed.getValue() && recipe != null) {
                 initialiseWithRecipe(recipe);
             }
         }
@@ -436,7 +436,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * A private task that calls the {@link TranslationServiceCaller#translateOperation(List, String, String)} method
      * and will post the result
      */
-    private  class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+    private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
         private String mDestinationLanguage;
@@ -476,8 +476,8 @@ public class RecipeViewModel extends AndroidViewModel {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 
 
-                builder.setMessage("Het lukte niet dit recept te vertalen. Bent u met het internet geconnecteerd?")
-                        .setTitle("Er ging iets mis...");
+                builder.setMessage(R.string.translation_error)
+                        .setTitle(R.string.something_went_wrong);
 
                 // set the dutch flag back to false
                 isDutch = false;
@@ -485,8 +485,6 @@ public class RecipeViewModel extends AndroidViewModel {
                 AlertDialog dialog = builder.create();
                 dialog.setCancelable(true);
                 dialog.show();
-
-
 
             }
 

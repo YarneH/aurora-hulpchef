@@ -21,4 +21,8 @@
     <!-- Translation error -->
     <string name="something_went_wrong">Er ging iets mis...</string>
     <string name="translation_error">Het lukte niet dit recept te vertalen. Bent u met het internet geconnecteerd?</string>
+
+    <!-- Strings for dialogbox that redirects to Aurora -->
+    <string name="dialog_message">De ingrediënten zijn over tijd. Je kunt verse vinden in Aurora.</string>
+    <string name="ok">OK</string>
 </resources>

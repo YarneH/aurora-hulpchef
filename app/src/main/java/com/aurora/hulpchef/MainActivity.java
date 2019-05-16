@@ -187,6 +187,11 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 ProgressBar pb = findViewById(R.id.pb_loading_screen);
                 pb.setProgress(0);
+
+                // We get here because SouschefInit in RecipeViewModel failed and as its last operation posted this
+                // value, we can be sure that this task is done and so all references to the context are cleaned up
+                // and no task is running in the background
+                finish();
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {

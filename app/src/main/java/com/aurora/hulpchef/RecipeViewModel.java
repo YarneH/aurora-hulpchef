@@ -14,7 +14,6 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -401,23 +400,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
-
-                try {
-
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did " +
-                                "not contain sections" +
-                                ", make sure you can open this type of file. If the problem" +
-                                " persists, please send feedback in Aurora");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false en return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
             return null;
         }
@@ -426,8 +412,11 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            }else{
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
         }
     }
@@ -436,7 +425,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * A private task that calls the {@link TranslationServiceCaller#translateOperation(List, String, String)} method
      * and will post the result
      */
-    private  class TranslationTask extends AsyncTask<Void, Void, List<String>> {
+    private class TranslationTask extends AsyncTask<Void, Void, List<String>> {
         private List<String> mSentences;
         private String mSourceLanguage;
         private String mDestinationLanguage;
@@ -485,8 +474,6 @@ public class RecipeViewModel extends AndroidViewModel {
                 AlertDialog dialog = builder.create();
                 dialog.setCancelable(true);
                 dialog.show();
-
-
 
             }
 

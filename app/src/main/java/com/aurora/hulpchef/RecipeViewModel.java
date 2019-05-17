@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
+import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -465,8 +466,8 @@ public class RecipeViewModel extends AndroidViewModel {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 
 
-                builder.setMessage("Het lukte niet dit recept te vertalen. Bent u met het internet geconnecteerd?")
-                        .setTitle("Er ging iets mis...");
+                builder.setMessage(R.string.translation_error)
+                        .setTitle(R.string.something_went_wrong);
 
                 // set the dutch flag back to false
                 isDutch = false;

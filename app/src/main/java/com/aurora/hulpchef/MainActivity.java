@@ -189,6 +189,11 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 ProgressBar pb = findViewById(R.id.pb_loading_screen);
                 pb.setProgress(0);
+
+                // We get here because SouschefInit in RecipeViewModel failed and as its last operation posted this
+                // value, we can be sure that this task is done and so all references to the context are cleaned up
+                // and no task is running in the background
+                finish();
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
@@ -324,6 +329,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Private function that shows a dialog box if the recipe has disappeared from memory. This dialog box redirects
+     * the user to Aurora
+     */
+    private void showGoBackToAuroraBox() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+
+        builder.setMessage(R.string.dialog_message)
+                .setTitle(R.string.something_went_wrong);
+
+        builder.setPositiveButton(R.string.ok, (DialogInterface dialog, int id) -> {
+            // if the button is clicked (only possible action) the user is sent to Aurora
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.aurora.aurora");
+            if (launchIntent != null) {
+                //null pointer check in case package name was not found
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                finish();
+                startActivity(launchIntent);
+            }
+        });
+
+
+        AlertDialog dialog = builder.create();
+        // you cannot cancel this box only press the ok button
+        dialog.setCancelable(false);
+        dialog.show();
+
+    }
+
+    /**
      * A {@link FragmentStatePagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
@@ -379,36 +414,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return tabName;
         }
-    }
-
-    /**
-     * Private function that shows a dialog box if the recipe has disappeared from memory. This dialog box redirects
-     * the user to Aurora
-     */
-    private void showGoBackToAuroraBox() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-
-        builder.setMessage(R.string.dialog_message)
-                .setTitle(R.string.something_went_wrong);
-
-        builder.setPositiveButton(R.string.ok, (DialogInterface dialog, int id) -> {
-            // if the button is clicked (only possible action) the user is sent to Aurora
-            Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.aurora.aurora");
-            if (launchIntent != null) {
-                //null pointer check in case package name was not found
-                launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                finish();
-                startActivity(launchIntent);
-            }
-        });
-
-
-        AlertDialog dialog = builder.create();
-        // you cannot cancel this box only press the ok button
-        dialog.setCancelable(false);
-        dialog.show();
-
     }
 }
 

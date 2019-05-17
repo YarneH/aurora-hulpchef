@@ -401,23 +401,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
             SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (comm != null) {
-
-                try {
-
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did " +
-                                "not contain sections" +
-                                ", make sure you can open this type of file. If the problem" +
-                                " persists, please send feedback in Aurora");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false en return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
             return null;
         }
@@ -426,8 +413,11 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue() && recipe != null) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            }else{
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
         }
     }

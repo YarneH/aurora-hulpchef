@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class RecipeViewModel extends AndroidViewModel {
     /**
-     * When initialising Souschef, poll every MILLIS_BETWEEN_UPDATES milliseconds
+     * When initialising Hulpchef, poll every MILLIS_BETWEEN_UPDATES milliseconds
      * for updates on the progressbar. This could also be done with an observable.
      */
     private static final int MILLIS_BETWEEN_UPDATES = 500;
@@ -33,9 +33,9 @@ public class RecipeViewModel extends AndroidViewModel {
      * The amount of steps it takes to detect a recipe.
      * This is used to pick the interval updates of the progress bar.
      * These steps are hard-coded-counted. This means that when the implementation
-     * of the Souschef-processor takes longer or shorter, this value must be changed.
+     * of the Hulpchef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 4;
+    private static final int DETECTION_STEPS = 3;
 
     /**
      * The maximum amount of people you can cook for.
@@ -392,7 +392,7 @@ public class RecipeViewModel extends AndroidViewModel {
     }
 
     /**
-     * Async taks executing the Souschef initialisation.
+     * Async taks executing the souschefprocessor and Hulpchef initialisation.
      */
     @SuppressLint("StaticFieldLeak")
     class SouschefInit extends AsyncTask<Void, String, Recipe> {

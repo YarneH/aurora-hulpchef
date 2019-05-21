@@ -1,7 +1,6 @@
 package com.aurora.hulpchef;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -136,6 +135,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * Must be a variable of this class to prevent garbage collection and stop listening
      */
     private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
+    private MutableLiveData<Boolean> mTranslationFailed = new MutableLiveData<>();
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -145,6 +145,8 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
+
+        // create and set the live data variables
         mProgressStep = new MutableLiveData<>();
         mProgressStep.setValue(0);
         mInitialised = new MutableLiveData<>();
@@ -153,10 +155,16 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         mDefaultAmountSet.setValue(false);
+        mTranslationFailed.setValue(false);
+
+        // create the annotator for the pipeline
         SouschefProcessorCommunicator.createAnnotationPipelines();
+
+        // listen to changes in the shared preferences
         SharedPreferences sharedPreferences = application.getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
                 Context.MODE_PRIVATE);
+
         mListener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.VERTAAL)) {
                 boolean toDutch = preferences.getBoolean(key, false);
@@ -199,8 +207,9 @@ public class RecipeViewModel extends AndroidViewModel {
                     } else {
                         // post the dutch recipe
                         mRecipe.postValue(mDutchRecipe);
+                        isDutch = true;
                     }
-                    isDutch = true;
+
                 } else {
                     // post the english recipe
                     mRecipe.postValue(mEnglishRecipe);
@@ -291,6 +300,10 @@ public class RecipeViewModel extends AndroidViewModel {
 
     public LiveData<Boolean> getInitialised() {
         return mInitialised;
+    }
+
+    public LiveData<Boolean> getTranslationFailed() {
+        return mTranslationFailed;
     }
 
     public LiveData<Integer> getNumberOfPeople() {
@@ -461,19 +474,14 @@ public class RecipeViewModel extends AndroidViewModel {
                 Log.d(getClass().getSimpleName(), translatedSentences.toString());
                 mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
                 mRecipe.postValue(mDutchRecipe);
+                // set the dutch flag to true
+                isDutch = true;
+                mTranslationFailed.postValue(true);
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-
-
-                builder.setMessage(R.string.translation_error)
-                        .setTitle(R.string.something_went_wrong);
-
                 // set the dutch flag back to false
                 isDutch = false;
-
-                AlertDialog dialog = builder.create();
-                dialog.setCancelable(true);
-                dialog.show();
+                // let the main knwo the translation has failed
+                mTranslationFailed.postValue(true);
 
             }
 

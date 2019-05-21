@@ -186,6 +186,13 @@ public class MainActivity extends AppCompatActivity {
             }
             hideProgress();
         });
+
+        mRecipeViewModel.getTranslationFailed().observe(this, (Boolean hasFailed) -> {
+            if (hasFailed != null && hasFailed) {
+                translationHasFailed();
+            }
+        });
+
         mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
             if (failed != null && failed) {
                 Toast.makeText(this, "Detectie faalde: " +
@@ -289,6 +296,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Function to let the user that the translation has failed, the preference is set back to english
+     */
+    public void translationHasFailed() {
+
+        // set preference back to English
+        findViewById(R.id.switch_toggle_imperial).performClick();
+
+
+        // Let the user know translation failed
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        builder.setMessage(R.string.translation_error)
+                .setTitle(R.string.something_went_wrong);
+
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(true);
+        dialog.show();
+
+    }
+
+    /**
      * Convert the read file to an ExtractedText object
      *
      * @param fileUri Uri to the file
@@ -337,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
      * the user to Aurora
      */
     private void showGoBackToAuroraBox() {
-       AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setMessage(R.string.dialog_message)
                 .setTitle(R.string.something_went_wrong);

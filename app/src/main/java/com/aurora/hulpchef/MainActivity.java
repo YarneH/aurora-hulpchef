@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * {@inheritDoc}
+ */
 public class MainActivity extends AppCompatActivity {
 
     /**

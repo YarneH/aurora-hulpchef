@@ -2,6 +2,9 @@ package com.aurora.hulpchef.utilities;
 
 import java.util.Locale;
 
+/**
+ * A class containing the string utilities of Hulpchef
+ */
 public final class StringUtilities {
     private static final int MIN_DENOMINATOR_OF_FRACTIONS = 2;
     private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;

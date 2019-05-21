@@ -414,7 +414,7 @@ public class RecipeViewModel extends AndroidViewModel {
             SouschefProcessorCommunicator communicator = SouschefProcessorCommunicator.createCommunicator(mContext);
             if (communicator != null) {
                 Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
-                // the processing has succeeded, set the flag to false en return the processedRecipe
+                // the processing has succeeded, set the flag to false and return the processedRecipe
                 mProcessingFailed.postValue(false);
                 return processedRecipe;
             }
@@ -480,7 +480,7 @@ public class RecipeViewModel extends AndroidViewModel {
             } else {
                 // set the dutch flag back to false
                 isDutch = false;
-                // let the main knwo the translation has failed
+                // let the main know the translation has failed
                 mTranslationFailed.postValue(true);
 
             }

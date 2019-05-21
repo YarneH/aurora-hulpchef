@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Function to let the user that the translation has failed, the preference is set back to english
+     * Function to let the user know that the translation has failed, the preference is set back to english
      */
     public void translationHasFailed() {
 

@@ -268,9 +268,9 @@ public class MainActivity extends AppCompatActivity {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e);
+            Log.e(TAG, "opening default file failed", e);
         }
-        Log.d("read", bld.toString());
+
         return bld.toString();
     }
 
@@ -332,11 +332,11 @@ public class MainActivity extends AppCompatActivity {
                 mRecipeViewModel.initialiseWithExtractedText(extractedText);
             } else {
                 // Error in case ExtractedText was null.
-                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+                Log.e(TAG, "ExtractedText-object was null.");
                 showGoBackToAuroraBox();
             }
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
+            Log.e(TAG,
                     "IOException while loading data from aurora", e);
             showGoBackToAuroraBox();
         }
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
             mRecipeViewModel.initialiseWithRecipe(receivedObject);
 
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
+            Log.e(TAG,
                     "IOException while loading data from aurora", e);
             showGoBackToAuroraBox();
         }

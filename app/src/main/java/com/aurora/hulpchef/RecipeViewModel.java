@@ -411,9 +411,9 @@ public class RecipeViewModel extends AndroidViewModel {
         protected Recipe doInBackground(Void... voids) {
             // Progressupdates are in demostate
 
-            SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
-            if (comm != null) {
-                Recipe processedRecipe = (Recipe) comm.pipeline(mExtractedText);
+            SouschefProcessorCommunicator communicator = SouschefProcessorCommunicator.createCommunicator(mContext);
+            if (communicator != null) {
+                Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
                 // the processing has succeeded, set the flag to false en return the processedRecipe
                 mProcessingFailed.postValue(false);
                 return processedRecipe;

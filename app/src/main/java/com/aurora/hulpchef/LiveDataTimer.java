@@ -110,6 +110,7 @@ public class LiveDataTimer {
         mFinished.setValue(false);
         mMillisLeft.setValue((long) (mTimeSetByUser * MILLIS));
         mTimerState.setValue(TIMER_INITIALISED);
+        mAlarming.setValue(false);
         mRunning = false;
         if (mCountDownTimer != null) {
             mCountDownTimer.cancel();

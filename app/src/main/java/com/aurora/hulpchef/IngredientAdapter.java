@@ -2,7 +2,6 @@ package com.aurora.hulpchef;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,14 +21,6 @@ import java.util.Locale;
  * Adapter for populating the ingredient list.
  */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.CardIngredientViewHolder> {
-    /**
-     * Minimum denominator for ingredient quantities
-     */
-    private static final int MIN_DENOMINATOR_OF_FRACTIONS = 3;
-    /**
-     * Maximum denominator for ingredient quantities
-     */
-    private static final int MAX_DENOMINATOR_OF_FRACTIONS = 10;
     /**
      * List with ingredients.
      */
@@ -92,7 +83,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
     /**
      * ViewHolder for the ingredients.
      */
-    public class CardIngredientViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class CardIngredientViewHolder extends RecyclerView.ViewHolder {
         /**
          * Error margin on the ingredient amounts.
          * The conversion is willing to make a mistake of ROUND_EPSILON
@@ -134,7 +125,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             mIngredientCard = itemView.findViewById(R.id.cv_ingredient_item);
             mCheckbox = itemView.findViewById(R.id.cb_ingredient_checked);
 
-            mIngredientCard.setOnClickListener(this);
             mCheckbox.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) ->
                     mChecked[getAdapterPosition()] = isChecked);
         }
@@ -163,18 +153,5 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Ca
             // Set checkboxes correctly
             mCheckbox.setChecked(mChecked[getAdapterPosition()]);
         }
-
-        /**
-         * Show a snackbar with the original text when the ingredient is clicked.
-         *
-         * @param v View registering the click.
-         */
-        @Override
-        public void onClick(View v) {
-            Snackbar.make(this.itemView,
-                    mIngredients.get(getAdapterPosition()).getOriginalLine(),
-                    Snackbar.LENGTH_LONG).show();
-        }
-
     }
 }

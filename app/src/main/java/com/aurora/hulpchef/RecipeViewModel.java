@@ -13,7 +13,6 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -25,7 +24,7 @@ import java.util.List;
  */
 public class RecipeViewModel extends AndroidViewModel {
     /**
-     * When initialising Souschef, poll every MILLIS_BETWEEN_UPDATES milliseconds
+     * When initialising Hulpchef, poll every MILLIS_BETWEEN_UPDATES milliseconds
      * for updates on the progressbar. This could also be done with an observable.
      */
     private static final int MILLIS_BETWEEN_UPDATES = 500;
@@ -34,9 +33,9 @@ public class RecipeViewModel extends AndroidViewModel {
      * The amount of steps it takes to detect a recipe.
      * This is used to pick the interval updates of the progress bar.
      * These steps are hard-coded-counted. This means that when the implementation
-     * of the Souschef-processor takes longer or shorter, this value must be changed.
+     * of the Hulpchef-processor takes longer or shorter, this value must be changed.
      */
-    private static final int DETECTION_STEPS = 4;
+    private static final int DETECTION_STEPS = 3;
 
     /**
      * The maximum amount of people you can cook for.
@@ -136,6 +135,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * Must be a variable of this class to prevent garbage collection and stop listening
      */
     private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
+    private MutableLiveData<Boolean> mTranslationFailed = new MutableLiveData<>();
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -145,6 +145,8 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(@NonNull Application application) {
         super(application);
         this.mContext = application;
+
+        // create and set the live data variables
         mProgressStep = new MutableLiveData<>();
         mProgressStep.setValue(0);
         mInitialised = new MutableLiveData<>();
@@ -153,10 +155,16 @@ public class RecipeViewModel extends AndroidViewModel {
         mCurrentPeople.setValue(0);
         mProcessingFailed.setValue(false);
         mDefaultAmountSet.setValue(false);
+        mTranslationFailed.setValue(false);
+
+        // create the annotator for the pipeline
         SouschefProcessorCommunicator.createAnnotationPipelines();
+
+        // listen to changes in the shared preferences
         SharedPreferences sharedPreferences = application.getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
                 Context.MODE_PRIVATE);
+
         mListener = (SharedPreferences preferences, String key) -> {
             if (key.equals(Tab1Overview.VERTAAL)) {
                 boolean toDutch = preferences.getBoolean(key, false);
@@ -199,8 +207,9 @@ public class RecipeViewModel extends AndroidViewModel {
                     } else {
                         // post the dutch recipe
                         mRecipe.postValue(mDutchRecipe);
+                        isDutch = true;
                     }
-                    isDutch = true;
+
                 } else {
                     // post the english recipe
                     mRecipe.postValue(mEnglishRecipe);
@@ -293,6 +302,10 @@ public class RecipeViewModel extends AndroidViewModel {
         return mInitialised;
     }
 
+    public LiveData<Boolean> getTranslationFailed() {
+        return mTranslationFailed;
+    }
+
     public LiveData<Integer> getNumberOfPeople() {
         return mCurrentPeople;
     }
@@ -379,7 +392,7 @@ public class RecipeViewModel extends AndroidViewModel {
     }
 
     /**
-     * Async taks executing the Souschef initialisation.
+     * Async taks executing the souschefprocessor and Hulpchef initialisation.
      */
     @SuppressLint("StaticFieldLeak")
     class SouschefInit extends AsyncTask<Void, String, Recipe> {
@@ -398,25 +411,12 @@ public class RecipeViewModel extends AndroidViewModel {
         protected Recipe doInBackground(Void... voids) {
             // Progressupdates are in demostate
 
-            SouschefProcessorCommunicator comm = SouschefProcessorCommunicator.createCommunicator(mContext);
-            if (comm != null) {
-
-                try {
-
-                    if (mExtractedText.getSections() == null) {
-                        throw new RecipeDetectionException("The received text from Aurora did " +
-                                "not contain sections" +
-                                ", make sure you can open this type of file. If the problem" +
-                                " persists, please send feedback in Aurora");
-                    }
-                    return (Recipe) comm.pipeline(mExtractedText);
-
-                } catch (RecipeDetectionException rde) {
-                    Log.d("FAILURE", rde.getMessage());
-                    mFailureMessage.postValue(rde.getMessage());
-                    mProcessingFailed.postValue(true);
-
-                }
+            SouschefProcessorCommunicator communicator = SouschefProcessorCommunicator.createCommunicator(mContext);
+            if (communicator != null) {
+                Recipe processedRecipe = (Recipe) communicator.pipeline(mExtractedText);
+                // the processing has succeeded, set the flag to false and return the processedRecipe
+                mProcessingFailed.postValue(false);
+                return processedRecipe;
             }
             return null;
         }
@@ -425,8 +425,11 @@ public class RecipeViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Recipe recipe) {
             // only initialize if the processing has not failed
-            if (!mProcessingFailed.getValue()) {
+            if (recipe != null) {
                 initialiseWithRecipe(recipe);
+            } else {
+                // let everyone know processing failed
+                mProcessingFailed.postValue(true);
             }
         }
     }
@@ -467,9 +470,20 @@ public class RecipeViewModel extends AndroidViewModel {
          */
         @Override
         protected void onPostExecute(List<String> translatedSentences) {
-            Log.d(getClass().getSimpleName(), translatedSentences.toString());
-            mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
-            mRecipe.postValue(mDutchRecipe);
+            if (!translatedSentences.isEmpty()) {
+                Log.d(getClass().getSimpleName(), translatedSentences.toString());
+                mDutchRecipe = mRecipe.getValue().getTranslatedRecipe(translatedSentences.toArray(new String[0]));
+                mRecipe.postValue(mDutchRecipe);
+                // set the dutch flag to true
+                isDutch = true;
+                mTranslationFailed.postValue(true);
+            } else {
+                // set the dutch flag back to false
+                isDutch = false;
+                // let the main know the translation has failed
+                mTranslationFailed.postValue(true);
+
+            }
 
         }
     }

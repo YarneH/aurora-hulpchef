@@ -1,6 +1,8 @@
 package com.aurora.hulpchef;
 
+import android.app.AlertDialog;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 
 import com.aurora.auroralib.Constants;
 import com.aurora.auroralib.ExtractedText;
+import com.aurora.auroralib.ProcessorCommunicator;
 import com.aurora.hulpchef.utilities.TimerRingtone;
 import com.aurora.souschefprocessor.recipe.Recipe;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -30,6 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * {@inheritDoc}
+ */
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -180,6 +186,13 @@ public class MainActivity extends AppCompatActivity {
             }
             hideProgress();
         });
+
+        mRecipeViewModel.getTranslationFailed().observe(this, (Boolean hasFailed) -> {
+            if (hasFailed != null && hasFailed) {
+                translationHasFailed();
+            }
+        });
+
         mRecipeViewModel.getProcessFailed().observe(this, (Boolean failed) -> {
             if (failed != null && failed) {
                 Toast.makeText(this, "Detectie faalde: " +
@@ -187,6 +200,11 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
                 ProgressBar pb = findViewById(R.id.pb_loading_screen);
                 pb.setProgress(0);
+
+                // We get here because SouschefInit in RecipeViewModel failed and as its last operation posted this
+                // value, we can be sure that this task is done and so all references to the context are cleaned up
+                // and no task is running in the background
+                finish();
             }
         });
         mRecipeViewModel.getDefaultAmountSet().observe(this, (Boolean set) -> {
@@ -250,9 +268,9 @@ public class MainActivity extends AppCompatActivity {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            Log.e("MAIN", "opening default file failed", e);
+            Log.e(TAG, "opening default file failed", e);
         }
-        Log.d("read", bld.toString());
+
         return bld.toString();
     }
 
@@ -278,6 +296,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Function to let the user know that the translation has failed, the preference is set back to english
+     */
+    public void translationHasFailed() {
+
+        // set preference back to English
+        findViewById(R.id.switch_toggle_imperial).performClick();
+
+
+        // Let the user know translation failed
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
+        builder.setMessage(R.string.translation_error)
+                .setTitle(R.string.something_went_wrong);
+
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(true);
+        dialog.show();
+
+    }
+
+    /**
      * Convert the read file to an ExtractedText object
      *
      * @param fileUri Uri to the file
@@ -291,11 +332,13 @@ public class MainActivity extends AppCompatActivity {
                 mRecipeViewModel.initialiseWithExtractedText(extractedText);
             } else {
                 // Error in case ExtractedText was null.
-                Log.e(MainActivity.class.getSimpleName(), "ExtractedText-object was null.");
+                Log.e(TAG, "ExtractedText-object was null.");
+                showGoBackToAuroraBox();
             }
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
+            Log.e(TAG,
                     "IOException while loading data from aurora", e);
+            showGoBackToAuroraBox();
         }
     }
 
@@ -313,9 +356,34 @@ public class MainActivity extends AppCompatActivity {
             mRecipeViewModel.initialiseWithRecipe(receivedObject);
 
         } catch (IOException e) {
-            Log.e(MainActivity.class.getSimpleName(),
+            Log.e(TAG,
                     "IOException while loading data from aurora", e);
+            showGoBackToAuroraBox();
         }
+    }
+
+    /**
+     * Private function that shows a dialog box if the recipe has disappeared from memory. This dialog box redirects
+     * the user to Aurora
+     */
+    private void showGoBackToAuroraBox() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(R.string.dialog_message)
+                .setTitle(R.string.something_went_wrong);
+
+        builder.setPositiveButton(R.string.ok, (DialogInterface dialog, int id) -> {
+            // if the button is clicked (only possible action) the user is sent to Aurora
+            ProcessorCommunicator.returnToAurora(this);
+            finish();
+        });
+
+
+        AlertDialog dialog = builder.create();
+        // you cannot cancel this box only press the ok button
+        dialog.setCancelable(false);
+        dialog.show();
+
     }
 
     /**

@@ -93,22 +93,6 @@ public class StepPlaceholderFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Extract the description of the steps
-     *
-     * @param recipe the recipe of which the steps will be extracted
-     * @return a list of Strings, representing all the different descriptions of the steps
-     */
-    public static String[] extractDescriptionSteps(Recipe recipe) {
-        int stepsCount = recipe.getRecipeSteps().size();
-        String[] steps = new String[stepsCount];
-
-        for (int i = 0; i < stepsCount; i++) {
-            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
-        }
-        return steps;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         int index = Objects.requireNonNull(getArguments()).getInt(ARG_SECTION_NUMBER);
@@ -251,6 +235,86 @@ public class StepPlaceholderFragment extends Fragment {
     }
 
     /**
+     * This function will update the TextView with a new quantity
+     *
+     * @param newAmount the new set amount of people
+     */
+    protected void update(int newAmount) {
+        if (mIngredientList == null) {
+            // got here while it was null, just return (other parts of the app will show the error message
+            return;
+        }
+        ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
+        mIngredientList.getAdapter().notifyDataSetChanged();
+
+        // Put ingredients in ascending beginIndex
+        Collections.reverse(mRecipeStep.getIngredients());
+        mCurrentAmount = newAmount;
+
+        int currentTextView = 0;
+        for (int i = 0; i < mStepTextViews.size(); i++) {
+            String description = mDescriptionBase[i];
+            int endOfTextView;
+            // Define the end index of the current TextView
+            try {
+                endOfTextView = mStartIndexDescriptionBlocks[i + 1];
+            } catch (IndexOutOfBoundsException e) {
+                // Current TextView is last TextView, so the last index is the length of the description
+                endOfTextView = mRecipeStep.getDescription().length();
+            }
+
+            // Replace the INGREDIENT_CODEs with the new quantity
+            for (Ingredient ingredient : mRecipeStep.getIngredients()) {
+                if (
+                    // Check if the quantity is valid. This cannot only be the last check, because of
+                    // description which only contain 1 block of text
+                        ingredient.getQuantityPosition().getBeginIndex() != 0
+                                && ingredient.getQuantityPosition().getEndIndex()
+                                != mDescriptionStep[currentTextView].length()
+                                // Check if the quantity is in current block
+                                && ingredient.getQuantityPosition().getEndIndex() >= mStartIndexDescriptionBlocks[i]
+                                && ingredient.getQuantityPosition().getEndIndex() < endOfTextView) {
+
+                    // Calculate new quantity and get String representation
+                    double newQuantity = ingredient.getQuantity() / mOriginalAmount * mCurrentAmount;
+                    String quantityString = StringUtilities.toDisplayQuantity(newQuantity);
+
+                    // Replace first INGREDIENT_CODE: Because of ascending begin index, the first will
+                    // always be the right one the replace
+                    description = description.replaceFirst(INGREDIENT_CODE, quantityString);
+                }
+            }
+
+
+            // Remove optional spaces and dots at the beginning of the block and set the text
+            Pattern p = Pattern.compile("\\p{Alpha}");
+            Matcher m = p.matcher(description);
+            if (m.find()) {
+                mStepTextViews.get(i).setText(description.substring(m.start()));
+            }
+        }
+
+        // Put ingredients back in descending beginIndex
+        Collections.reverse(mRecipeStep.getIngredients());
+    }
+
+    /**
+     * Extract the description of the steps
+     *
+     * @param recipe the recipe of which the steps will be extracted
+     * @return a list of Strings, representing all the different descriptions of the steps
+     */
+    public static String[] extractDescriptionSteps(Recipe recipe) {
+        int stepsCount = recipe.getRecipeSteps().size();
+        String[] steps = new String[stepsCount];
+
+        for (int i = 0; i < stepsCount; i++) {
+            steps[i] = recipe.getRecipeSteps().get(i).getDescription();
+        }
+        return steps;
+    }
+
+    /**
      * Changes the quantities of ingredients in description by INGREDIENT_CODE
      *
      * @param description       a block of text where the ingredient might be located
@@ -311,65 +375,5 @@ public class StepPlaceholderFragment extends Fragment {
             tempView.setImageDrawable(dot);
             linearLayout.addView(tempView);
         }
-    }
-
-    /**
-     * This function will update the TextView with a new quantity
-     *
-     * @param newAmount the new set amount of people
-     */
-    protected void update(int newAmount) {
-        ((StepIngredientAdapter) mIngredientList.getAdapter()).setCurrentAmount(newAmount);
-        mIngredientList.getAdapter().notifyDataSetChanged();
-
-        // Put ingredients in ascending beginIndex
-        Collections.reverse(mRecipeStep.getIngredients());
-        mCurrentAmount = newAmount;
-
-        int currentTextView = 0;
-        for (int i = 0; i < mStepTextViews.size(); i++) {
-            String description = mDescriptionBase[i];
-            int endOfTextView;
-            // Define the end index of the current TextView
-            try {
-                endOfTextView = mStartIndexDescriptionBlocks[i + 1];
-            } catch (IndexOutOfBoundsException e) {
-                // Current TextView is last TextView, so the last index is the length of the description
-                endOfTextView = mRecipeStep.getDescription().length();
-            }
-
-            // Replace the INGREDIENT_CODEs with the new quantity
-            for (Ingredient ingredient : mRecipeStep.getIngredients()) {
-                if (
-                    // Check if the quantity is valid. This cannot only be the last check, because of
-                    // description which only contain 1 block of text
-                        ingredient.getQuantityPosition().getBeginIndex() != 0
-                                && ingredient.getQuantityPosition().getEndIndex()
-                                != mDescriptionStep[currentTextView].length()
-                                // Check if the quantity is in current block
-                                && ingredient.getQuantityPosition().getEndIndex() >= mStartIndexDescriptionBlocks[i]
-                                && ingredient.getQuantityPosition().getEndIndex() < endOfTextView) {
-
-                    // Calculate new quantity and get String representation
-                    double newQuantity = ingredient.getQuantity() / mOriginalAmount * mCurrentAmount;
-                    String quantityString = StringUtilities.toDisplayQuantity(newQuantity);
-
-                    // Replace first INGREDIENT_CODE: Because of ascending begin index, the first will
-                    // always be the right one the replace
-                    description = description.replaceFirst(INGREDIENT_CODE, quantityString);
-                }
-            }
-
-
-            // Remove optional spaces and dots at the beginning of the block and set the text
-            Pattern p = Pattern.compile("\\p{Alpha}");
-            Matcher m = p.matcher(description);
-            if (m.find()) {
-                mStepTextViews.get(i).setText(description.substring(m.start()));
-            }
-        }
-
-        // Put ingredients back in descending beginIndex
-        Collections.reverse(mRecipeStep.getIngredients());
     }
 }

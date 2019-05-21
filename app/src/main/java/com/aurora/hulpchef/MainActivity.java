@@ -2,10 +2,8 @@ package com.aurora.hulpchef;
 
 import android.app.AlertDialog;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -303,8 +301,7 @@ public class MainActivity extends AppCompatActivity {
     public void translationHasFailed() {
 
         // set preference back to English
-       findViewById(R.id.switch_toggle_imperial).performClick();
-
+        findViewById(R.id.switch_toggle_imperial).performClick();
 
 
         // Let the user know translation failed

@@ -1,7 +1,6 @@
 package com.aurora.hulpchef;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -9,8 +8,6 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -138,6 +135,7 @@ public class RecipeViewModel extends AndroidViewModel {
      * Must be a variable of this class to prevent garbage collection and stop listening
      */
     private SharedPreferences.OnSharedPreferenceChangeListener mListener = null;
+    private MutableLiveData<Boolean> mTranslationFailed = new MutableLiveData<>();
 
     /**
      * Constructor that initialises the pipeline and LiveData.
@@ -293,9 +291,6 @@ public class RecipeViewModel extends AndroidViewModel {
         }
     }
 
-    private MutableLiveData<Boolean> mTranslationFailed = new MutableLiveData<>() ;
-
-
     private boolean isPreferenceSetToDutch() {
         SharedPreferences sharedPreferences = getApplication().getSharedPreferences(
                 Tab1Overview.SETTINGS_PREFERENCES,
@@ -307,7 +302,7 @@ public class RecipeViewModel extends AndroidViewModel {
         return mInitialised;
     }
 
-    public LiveData<Boolean> getTranslationFailed(){
+    public LiveData<Boolean> getTranslationFailed() {
         return mTranslationFailed;
     }
 
@@ -487,7 +482,6 @@ public class RecipeViewModel extends AndroidViewModel {
                 isDutch = false;
                 // let the main knwo the translation has failed
                 mTranslationFailed.postValue(true);
-
 
             }
 

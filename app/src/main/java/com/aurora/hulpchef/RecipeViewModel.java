@@ -14,7 +14,6 @@ import android.util.Log;
 
 import com.aurora.auroralib.ExtractedText;
 import com.aurora.auroralib.translation.TranslationServiceCaller;
-import com.aurora.souschefprocessor.facade.RecipeDetectionException;
 import com.aurora.souschefprocessor.facade.SouschefProcessorCommunicator;
 import com.aurora.souschefprocessor.recipe.Recipe;
 
@@ -415,7 +414,7 @@ public class RecipeViewModel extends AndroidViewModel {
             // only initialize if the processing has not failed
             if (recipe != null) {
                 initialiseWithRecipe(recipe);
-            }else{
+            } else {
                 // let everyone know processing failed
                 mProcessingFailed.postValue(true);
             }

@@ -334,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
      * the user to Aurora
      */
     private void showGoBackToAuroraBox() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+       AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setMessage(R.string.dialog_message)
                 .setTitle(R.string.something_went_wrong);

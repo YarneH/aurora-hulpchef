@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * A singleton class for the Ringtone playing when one or multiple timers finishes
  */
-public class TimerRingtone {
+public final class TimerRingtone {
     /**
      * The singleton instance
      */
